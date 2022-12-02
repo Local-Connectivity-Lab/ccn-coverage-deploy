@@ -1,0 +1,57 @@
+---
+- name: Nginx
+  hosts: all
+  vars:
+    ssl_cert_contact_email: lcl@seattlecommunitynetwork.org
+  tasks:
+    - name: Install nginx
+      become: yes
+      ansible.builtin.apt:
+        update_cache: yes
+        name:
+          - nginx
+        state: present
+
+    - name: Install certbot
+      when: public_domain_name is defined
+      become: yes
+      community.general.snap:
+        classic: yes
+        name: certbot
+    - name: Find existing TLS cert
+      when: public_domain_name is defined
+      become: yes
+      ansible.builtin.shell:
+        cmd: certbot certificates --cert-name {{ public_domain_name }} | grep VALID | wc -l
+      register: existing_cert
+      changed_when: false
+    - name: Acquire TLS cert
+      when: public_domain_name is defined and existing_cert.stdout == '0'
+      become: yes
+      ansible.builtin.shell:
+        cmd: certbot certonly --noninteractive --nginx -m {{ ssl_cert_contact_email }} --agree-tos --no-eff-email --cert-name {{ public_domain_name }} --domains {{ public_domain_name }}
+
+    - name: Find existing nginx configs under sites-enabled/
+      ansible.builtin.find:
+        paths: /etc/nginx/sites-enabled/
+        file_type: any
+      register: existing_sites_enabled
+    - name: Remove existing nginx configs under sites-enabled/
+      become: yes
+      loop: '{{ existing_sites_enabled.files }}'
+      ansible.builtin.file:
+        path: '{{ item.path }}'
+        state: absent
+    - name: Copy nginx config
+      become: yes
+      ansible.builtin.template:
+        src: '{{ playbook_dir }}/../assets/prod/nginx-configs/{{ "with-ssl" if public_domain_name is defined else "without-ssl" }}/01-ccn-coverage.conf'
+        dest: /etc/nginx/conf.d/01-ccn-coverage.conf
+      notify: Restart nginx
+
+  handlers:
+    - name: Restart nginx
+      become: yes
+      ansible.builtin.systemd:
+        name: nginx
+        state: restarted

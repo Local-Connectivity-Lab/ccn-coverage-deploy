@@ -1,0 +1,4 @@
+---
+- ansible.builtin.import_playbook: ./playbooks/01-mongo.yaml
+- ansible.builtin.import_playbook: ./playbooks/02-app.yaml
+- ansible.builtin.import_playbook: ./playbooks/03-nginx.yaml

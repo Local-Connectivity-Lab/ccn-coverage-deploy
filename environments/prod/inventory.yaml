@@ -1,0 +1,4 @@
+all:
+  hosts:
+    ccn_coverage_prod:
+      public_domain_name: coverage.seattlecommunitynetwork.org

@@ -1,0 +1,14 @@
+name: ccn-coverage
+
+services:
+  mongo:
+    image: mongo:6.0.2
+    volumes:
+      - mongo-data-db:/data/db
+      - mongo-data-configdb:/data/configdb
+    ports:
+      - 27017:27017
+
+volumes:
+  mongo-data-db:
+  mongo-data-configdb:
