@@ -1,0 +1,18 @@
+---
+- name: Mongo
+  hosts: all
+  tasks:
+    - name: Install mongo
+      become: yes
+      ansible.builtin.apt:
+        update_cache: yes
+        name:
+          - mongodb-server
+        state: present
+      notify: Restart mongo
+  handlers:
+    - name: Restart mongo
+      become: yes
+      ansible.builtin.systemd:
+        name: mongodb
+        state: restarted

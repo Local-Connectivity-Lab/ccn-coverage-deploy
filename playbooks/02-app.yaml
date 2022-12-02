@@ -1,0 +1,72 @@
+---
+- name: CCN Coverage App
+  hosts: all
+  vars:
+    nvm_version: 0.39.1
+    # api_git_commit: f9506a5
+    api_git_commit: ysono/release-mgmt
+    api_git_dir: ~/ccn-coverage-api
+    api_service_name: API Server
+    # vis_git_commit: 7868418
+    vis_git_commit: ysono/release-mgmt
+    vis_git_dir: ~/ccn-coverage-vis
+  tasks:
+    - name: Install git
+      become: yes
+      ansible.builtin.apt:
+        update_cache: yes
+        name:
+          - git
+        state: present
+
+    - name: Read installed nvm version
+      ansible.builtin.shell:
+        executable: /bin/bash
+        cmd: '[[ -f ~/.nvm/nvm.sh ]] && source ~/.nvm/nvm.sh && nvm --version || true'
+      register: existing_nvm_version
+      changed_when: false
+    - name: Install nvm
+      when: existing_nvm_version.stdout != nvm_version
+      ansible.builtin.shell:
+        executable: /bin/bash
+        cmd: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v{{ nvm_version }}/install.sh | bash
+
+    - name: Clone api code
+      ansible.builtin.git:
+        accept_newhostkey: yes
+        repo: ssh://git@github.com/Local-Connectivity-Lab/ccn-coverage-api.git
+        version: '{{ api_git_commit }}'
+        dest: '{{ api_git_dir }}'
+    - name: Copy api's keys
+      ansible.builtin.copy:
+        src: '{{ playbook_dir }}/../assets/prod/api-keys/'
+        dest: '{{ api_git_dir }}/keys/'
+    - name: Build and restart api
+      ansible.builtin.shell:
+        executable: /bin/bash
+        chdir: '{{ api_git_dir }}'
+        cmd: >
+          source ~/.nvm/nvm.sh --install &&
+          nvm use &&
+          npm install &&
+          npm run build &&
+          npm install --global pm2 &&
+          pm2 delete "{{ api_service_name }}" || true &&
+          pm2 start --name "{{ api_service_name }}" npm -- run start-built
+
+    - name: Clone vis code
+      ansible.builtin.git:
+        accept_newhostkey: yes
+        repo: ssh://git@github.com/Local-Connectivity-Lab/ccn-coverage-vis.git
+        version: '{{ vis_git_commit }}'
+        dest: '{{ vis_git_dir }}'
+    - name: Build vis
+      ansible.builtin.shell:
+        executable: /bin/bash
+        chdir: '{{ vis_git_dir }}'
+        cmd: >
+          source ~/.nvm/nvm.sh --install &&
+          nvm use &&
+          npm install &&
+          REACT_APP__API_URL='' npm run build &&
+          sudo ln -s "${PWD}/build" /var/www/ccn-coverage
