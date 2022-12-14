@@ -69,6 +69,7 @@ This repo serves these purposes:
 
 ## Staging and Production environments
 
+Fist-time setup:
 1. Provision a compute instance on cloud.
     - CPUs = 1
     - Memory = 2GB
@@ -78,8 +79,26 @@ This repo serves these purposes:
     ```
     Host ccn_coverage_staging
         HostName foo.bar.com
+        ForwardAgent yes
+        ...
     ```
-1. Configure the target environment via Ansible.
+
+Do deploy:
+1. Back up data.
+    1. `ssh ccn_coverage_prod`
+    1. Inside ccn_coverage_prod :
+        ```sh
+        cd /tmp/
+        rm -r ./dump.tgz ./dump/
+        mongodump
+        tgz -zxf ./dump.tgz ./dump/
+        ```
+    1. Upload the dump.tgz to our Google Drive.
+    1. Inside ccn_coverage_prod :
+        ```sh
+        rm -r /tmp/.dump.tgz /tmp/dump/
+        ```
+1. Configure a target environment via Ansible.
     ```sh
     cd ccn-coverage-deploy/
     ansible-playbook -i ./environments/staging ./playbook.yaml
