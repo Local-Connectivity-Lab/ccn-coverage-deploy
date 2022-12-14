@@ -3,13 +3,14 @@
   hosts: all
   vars:
     nvm_version: 0.39.1
-    # api_git_commit: f9506a5
-    api_git_commit: ysono/release-mgmt
+
+    api_git_commit: 69c7b3178b233be3eb9574a8620dfc6a5cf5e80e
     api_git_dir: ~/ccn-coverage-api
     api_service_name: API Server
-    # vis_git_commit: 7868418
-    vis_git_commit: ysono/release-mgmt
+
+    vis_git_commit: af2421ddd641bee606c59f01f23dd899d2b3675f
     vis_git_dir: ~/ccn-coverage-vis
+
   tasks:
     - name: Install git
       become: yes
