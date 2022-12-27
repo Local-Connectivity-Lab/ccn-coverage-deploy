@@ -73,7 +73,8 @@ Fist-time setup:
 1. Provision a compute instance on cloud.
     - CPUs = 1
     - Memory = 2GB
-1. [Install ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html).
+1. Ansible depends on python. Install a python version manager, e.g. [pyenv](https://github.com/pyenv/pyenv#installation). Then, install a python runtime: e.g. `pyenv install 3.11`.
+1. [Install ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) (`pip install ansible`).
 1. Copy Backend's keys to [here](./assets/prod/api-keys/).
 1. Configure hosts to be targetted by Ansible. In your `~/.ssh/config`:
     ```
