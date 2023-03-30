@@ -10,7 +10,7 @@ This repo serves these purposes:
     All below instructions are run in a Linux or Mac.
 1. [Set up your GitHub account with an SSH key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh).
 1. Install a node version manager, e.g. [nvm](https://github.com/nvm-sh/nvm).
-1. Below, if you're developing the frontend only, skip database and backend.
+1. Below, if you're developing the vis only, skip database and api.
 1. First-time setup
     1. Database
         - Option 1: docker
@@ -25,12 +25,12 @@ This repo serves these purposes:
                 ```
         - Option 2: mongo version manager
             - There are several tools for this. Search online for the most up-to-date recommendations.
-    1. Backend
+    1. Api
         ```sh
         cd your-development-dir/
         git clone git@github.com:Local-Connectivity-Lab/ccn-coverage-api.git
         ```
-    1. Frontend
+    1. Vis
         ```sh
         cd your-development-dir/
         git clone git@github.com:Local-Connectivity-Lab/ccn-coverage-vis.git
@@ -48,7 +48,7 @@ This repo serves these purposes:
                 cd ccn-coverage-deploy/
                 docker compose down
                 ```
-    1. Backend
+    1. Api
         1. Bringup:
             ```sh
             cd ccn-coverage-api/
@@ -56,13 +56,13 @@ This repo serves these purposes:
             npm start
             ```
         1. Teardown: Ctrl + c
-    1. Frontend
+    1. Vis
         1. Bringup:
             ```sh
             cd ccn-coverage-vis/
             nvm use
             npm start
-            # If you want frontend to talk to your local backend, specify the below environment variable.
+            # If you want vis to talk to your local api, specify the below environment variable.
             # REACT_APP__API_URL='http://localhost:3000' npm start
             ```
         1. Teardown: Ctrl + c
@@ -75,7 +75,7 @@ Fist-time setup:
     - Memory = 2GB
 1. Ansible depends on python. Install a python version manager, e.g. [pyenv](https://github.com/pyenv/pyenv#installation). Then, install a python runtime: e.g. `pyenv install 3.11`.
 1. [Install ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) (`pip install ansible`).
-1. Copy Backend's keys to [here](./assets/prod/api-keys/).
+1. Copy Api's keys to [here](./assets/prod/api-keys/).
 1. Configure hosts to be targetted by Ansible. In your `~/.ssh/config`:
     ```
     Host ccn_coverage_staging

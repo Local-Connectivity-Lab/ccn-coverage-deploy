@@ -8,8 +8,9 @@
     api_git_dir: ~/ccn-coverage-api
     api_service_name: API Server
 
-    vis_git_commit: af2421ddd641bee606c59f01f23dd899d2b3675f
+    vis_git_commit: 97a3bf8619fdd29bed0faba28c40d208bea1f6ee
     vis_git_dir: ~/ccn-coverage-vis
+    vis_service_name: Vis Server
 
   tasks:
     - name: Install git
@@ -61,7 +62,7 @@
         repo: ssh://git@github.com/Local-Connectivity-Lab/ccn-coverage-vis.git
         version: '{{ vis_git_commit }}'
         dest: '{{ vis_git_dir }}'
-    - name: Build vis
+    - name: Restart vis
       ansible.builtin.shell:
         executable: /bin/bash
         chdir: '{{ vis_git_dir }}'
@@ -69,5 +70,6 @@
           source ~/.nvm/nvm.sh --install &&
           nvm use &&
           npm install &&
-          REACT_APP__API_URL='' npm run build &&
-          sudo ln -s "${PWD}/build" /var/www/ccn-coverage
+          npm install --global pm2 &&
+          pm2 delete "{{ vis_service_name }}" || true &&
+          pm2 start --name "{{ vis_service_name }}" npm -- run start
