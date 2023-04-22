@@ -8,7 +8,10 @@ This repo serves these purposes:
 
 1. If your host OS is Windows, [install WSL 2 and Linux](https://learn.microsoft.com/en-us/windows/wsl/install).
     All below instructions are run in a Linux or Mac.
-1. [Set up your GitHub account with an SSH key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh).
+1. Prepare your ssh key.
+    To generate a new key, see [here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent?platform=linux).
+    If your host OS is Windows, [copy your key(s)](https://devblogs.microsoft.com/commandline/sharing-ssh-keys-between-windows-and-wsl-2/) between the host Windows and the guest Linux.
+1. [Set up your GitHub account with your SSH key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account).
 1. Install a node version manager, e.g. [nvm](https://github.com/nvm-sh/nvm).
 1. Below, if you're developing the vis only, skip database and api.
 1. First-time setup
@@ -73,21 +76,27 @@ Fist-time setup:
 1. Provision a compute instance on cloud.
     - CPUs = 1
     - Memory = 2GB
+1. Your local environment should be configured with an ssh key that authorizes you on GitHub _and_ on the remote environment. In addition, every time you ssh into a remote environment (staging or production), you want to "forward" your local ssh key there. To do so:
+    1. Edit your `~/.ssh/config`. Add these lines:
+        ```
+        Host *.seattlecommunitynetwork.org
+            ForwardAgent yes
+        ```
+    1. Edit your shell configuration file: `~/.bashrc` on Linux or `~/.zshrc` on Mac. Add these lines. (This may be optional, but is likely needed on a WSL Linux.)
+        ```sh
+        if [ -z "$SSH_AUTH_SOCK" ] ; then
+            eval `ssh-agent -s`
+            ssh-add
+        fi
+        ```
 1. Ansible depends on python. Install a python version manager, e.g. [pyenv](https://github.com/pyenv/pyenv#installation). Then, install a python runtime: e.g. `pyenv install 3.11`.
 1. [Install ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) (`pip install ansible`).
 1. Copy Api's keys to [here](./assets/prod/api-keys/).
-1. Configure hosts to be targetted by Ansible. In your `~/.ssh/config`:
-    ```
-    Host ccn_coverage_staging
-        HostName foo.bar.com
-        ForwardAgent yes
-        ...
-    ```
 
 Do deploy:
 1. Back up data.
-    1. `ssh ccn_coverage_prod`
-    1. Inside ccn_coverage_prod :
+    1. `ssh <environment>.seattlecommunitynetwork.org`
+    1. At the remote environment:
         ```sh
         cd /tmp/
         rm -r ./dump.tgz ./dump/
@@ -95,7 +104,7 @@ Do deploy:
         tgz -zxf ./dump.tgz ./dump/
         ```
     1. Upload the dump.tgz to our Google Drive.
-    1. Inside ccn_coverage_prod :
+    1. At the remote environment:
         ```sh
         rm -r /tmp/.dump.tgz /tmp/dump/
         ```
